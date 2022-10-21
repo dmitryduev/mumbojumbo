@@ -28,10 +28,16 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - name: Sleep and Run
+      - name: Checkout wandb/wandb
+        uses: actions/checkout@v3
+        with:
+          repository: wandb/wandb
+          path: wandb
+      - name: Mergefreeze main branch
         run: |
-          echo "Sleeping for 3"
-          sleep 3
+          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/dmitryduev/mumbojumbo/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
+          sleep 20
+          curl -d "frozen=false&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/dmitryduev/mumbojumbo/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
 
   run:
     name: Just run
