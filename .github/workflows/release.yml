@@ -1,0 +1,45 @@
+name: Cut Release
+run-name: cut sdk release triggered by ${{ github.actor }}
+
+defaults:
+  run:
+    # run shell in interactive mode
+    shell: bash -ieo pipefail {0}
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump-version-kind:
+        type: choice
+        required: true
+        description: How to bump the current version
+        default: devkind
+        options:
+          - "major"
+          - "minor"
+          - "patch"
+          - "dev"
+          - "devkind"
+          - "pre"
+          - "prekind"
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep and Run
+        run: |
+          echo "Sleeping for 3"
+          sleep 3
+
+  run:
+    name: Just run
+    environment: "release"
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep and Run
+        run: |
+          echo "Sleeping for 2"
+          sleep 2
