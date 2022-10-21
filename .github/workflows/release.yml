@@ -24,8 +24,17 @@ on:
           - "prekind"
 
 jobs:
-  test:
-    name: Run tests
+  freeze:
+    name: Free main branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Freeze main branch
+        run: |
+          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/dmitryduev/mumbojumbo/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
+
+  test-nightly:
+    name: Run nightly tests
+    needs: freeze
     runs-on: ubuntu-latest
     steps:
       - name: Checkout wandb/wandb
@@ -33,16 +42,27 @@ jobs:
         with:
           repository: wandb/wandb
           path: wandb
-      - name: Mergefreeze main branch
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Run nightly tests
         run: |
-          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/dmitryduev/mumbojumbo/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
-          sleep 20
+          cd wandb
+          CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait
+
+  unfreeze:
+    name: Unfreeze main branch
+    needs: test-nightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unfreeze main branch
+        run: |
           curl -d "frozen=false&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/dmitryduev/mumbojumbo/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
 
   run:
     name: Just run
     environment: "release"
-    needs: test
+    needs: unfreeze
     runs-on: ubuntu-latest
     steps:
       - name: Sleep and Run
