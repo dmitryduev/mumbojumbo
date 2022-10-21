@@ -1,10 +1,10 @@
 name: Cut Release
 run-name: cut sdk release triggered by ${{ github.actor }}
 
-defaults:
-  run:
-    # run shell in interactive mode
-    shell: bash -ieo pipefail {0}
+#defaults:
+#  run:
+#    # run shell in interactive mode
+#    shell: bash -ieo pipefail {0}
 
 on:
   workflow_dispatch:
