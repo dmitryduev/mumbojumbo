@@ -84,25 +84,23 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Create release branch
+      - name: Bump version
         run: |
           python -m pip install --upgrade pip
           pip install bump2version
-          
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
           new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
-          latest_tag="$(git tag -l --sort=committerdate 'v[0-9]*' | tail -n 1)"
+          echo "release_version=${new_version}" >> $GITHUB_ENV
           
-          release_branch=release-${new_version}
-          git checkout -b ${release_branch}
-          git push --set-upstream origin ${release_branch}
-
-          echo "release_branch=${release_branch}" >> $GITHUB_ENV
-          echo "release_tag=v${new_version}" >> $GITHUB_ENV
-          echo "previous_release_tag=${latest_tag}" >> $GITHUB_ENV
-
+      - name: Create release pr
+        id: create-pr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          branch: releas-${{ env.release_version }}
+          title: "chore(sdk): release ${{ env.release_version }} version"
+          draft: true
+          
       - name: Create release notes
         uses: "actions/github-script@v5"
         with:
@@ -114,9 +112,9 @@ jobs:
                 owner: context.repo.owner,
                 prerelease: false,
                 repo: context.repo.repo,
-                tag_name: process.env.release_tag,
-                name: process.env.release_tag,
-                target_commitish: process.env.release_branch,
+                tag_name: 'v'+process.env.new_version,
+                name: 'v'+process.env.new_version,
+                target_commitish: process.steps.create-pr.outputs.pull-request-head-sha,
                 generate_release_notes: true,
                 previous_tag_name: process.env.previous_release_tag,
               });
@@ -124,11 +122,10 @@ jobs:
               core.setFailed(error.message);
             }
 
-      - name: Make release
+      - name: Publish
         run: |
           # TODO use github actions to do the release
-          echo ${current_branch}
-          echo "${{ env.release_branch }}"
+          echo "publish"
 
   unfreeze:
     name: Unfreeze main branch
