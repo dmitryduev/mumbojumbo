@@ -1,11 +1,6 @@
 name: Cut Release
 run-name: cut sdk release triggered by ${{ github.actor }}
 
-#defaults:
-#  run:
-#    # run shell in interactive mode
-#    shell: bash -ieo pipefail {0}
-
 on:
   workflow_dispatch:
     inputs:
@@ -30,7 +25,7 @@ jobs:
     steps:
       - name: Freeze main branch
         run: |
-          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/dmitryduev/mumbojumbo/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
+          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
 
   test-nightly:
     name: Run nightly tests
@@ -70,25 +65,75 @@ jobs:
           cd wandb-testing
           pip install git+https://github.com/wandb/wandb@main#egg=wandb
           python --version
-
-  unfreeze:
-    name: Unfreeze main branch
-    needs: 
+          
+  make-release:
+    name: Release
+    environment: "release"
+    needs:
       - test-nightly
       - test-regression
     runs-on: ubuntu-latest
     steps:
-      - name: Unfreeze main branch
-        run: |
-          curl -d "frozen=false&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/dmitryduev/mumbojumbo/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
+      - name: Checkout main for ${{ github.event.inputs.bump-version-kind }} release
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
-  run:
-    name: Just run
-    environment: "release"
-    needs: unfreeze
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Create release branch
+        run: |
+          python -m pip install --upgrade pip
+          pip install bump2version
+          
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
+          latest_tag="$(git tag -l --sort=committerdate 'v[0-9]*' | tail -n 1)"
+
+          echo "release_branch=release-${new_version}" >> $GITHUB_ENV
+          echo "release_tag=v${new_version}" >> $GITHUB_ENV
+          echo "previous_release_tag=${latest_tag}" >> $GITHUB_ENV
+
+          git checkout -b ${{ env.release_branch }}
+          git push --set-upstream origin "${{ env.release_branch }}"
+
+      - name: Create release notes
+        uses: "actions/github-script@v5"
+        with:
+          script: |
+            try {
+              await github.rest.repos.createRelease({
+                draft: true,
+                generate_release_notes: false,
+                owner: context.repo.owner,
+                prerelease: false,
+                repo: context.repo.repo,
+                tag_name: process.env.release_tag,
+                name: process.env.release_tag,
+                target_commitish: process.env.release_branch,
+                generate_release_notes: true,
+                previous_tag_name: process.env.previous_release_tag,
+              });
+            } catch (error) {
+              core.setFailed(error.message);
+            }
+
+      - name: Make release
+        run: |
+          # TODO use github actions to do the release
+          echo ${current_branch}
+          echo "${{ env.release_branch }}"
+
+  unfreeze:
+    name: Unfreeze main branch
+    needs: make-release
     runs-on: ubuntu-latest
     steps:
-      - name: Sleep and Run
+      - name: Unfreeze main branch
         run: |
-          echo "Sleeping for 2"
-          sleep 2
+          curl -d "frozen=false&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
