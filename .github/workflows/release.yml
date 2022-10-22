@@ -91,6 +91,7 @@ jobs:
           new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
           echo "release_branch=release-${new_version}" >> $GITHUB_ENV
           echo "release_tag=v${new_version}" >> $GITHUB_ENV
+          echo "release_version=${new_version}" >> $GITHUB_ENV
           
       - name: Create release pr
         id: create-pr
