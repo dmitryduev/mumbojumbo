@@ -94,13 +94,14 @@ jobs:
 
           new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
           latest_tag="$(git tag -l --sort=committerdate 'v[0-9]*' | tail -n 1)"
+          
+          release_branch=release-${new_version}
+          git checkout -b ${release_branch}
+          git push --set-upstream origin ${release_branch}
 
-          echo "release_branch=release-${new_version}" >> $GITHUB_ENV
+          echo "release_branch=${release_branch}" >> $GITHUB_ENV
           echo "release_tag=v${new_version}" >> $GITHUB_ENV
           echo "previous_release_tag=${latest_tag}" >> $GITHUB_ENV
-
-          git checkout -b ${{ env.release_branch }}
-          git push --set-upstream origin "${{ env.release_branch }}"
 
       - name: Create release notes
         uses: "actions/github-script@v5"
