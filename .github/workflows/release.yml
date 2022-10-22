@@ -100,6 +100,7 @@ jobs:
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           branch: ${{ env.release_branch }}
+          base: ${{ env.release_branch }}
           title: "chore(sdk): release ${{ env.release_version }} version"
           draft: true
           
@@ -125,7 +126,8 @@ jobs:
       - name: Publish
         run: |
           # TODO use github actions to do the release
-          echo "publish"
+          echo ${{ steps.create-pr.outputs.pull-request-head-sha }}
+          echo ${{ steps.create-pr.outputs.pull-request-head-sha }}
 
   unfreeze:
     name: Unfreeze main branch
