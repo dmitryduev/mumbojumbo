@@ -101,25 +101,36 @@ jobs:
           delete-branch: true
           title: "chore(sdk): release ${{ env.release_version }} version"
           draft: true
+          commit-message: "[create-pull-request] automated change of workflow ${{ github.run_id }} attempt ${{ github.run_number }}"
       - name: Create release notes
-        uses: "actions/github-script@v5"
+        uses: ncipollo/release-action@v1
         with:
-          script: |
-            try {
-              await github.rest.repos.createRelease({
-                draft: true,
-                generate_release_notes: false,
-                owner: context.repo.owner,
-                prerelease: false,
-                repo: context.repo.repo,
-                tag_name: process.env.release_tag,
-                name: process.env.release_tag,
-                target_commitish: process.env.release_branch,
-                generate_release_notes: true,
-              });
-            } catch (error) {
-              core.setFailed(error.message);
-            }
+          allowUpdates: true
+          draft: true
+          name: ${{ env.release_tag }}
+          generateReleaseNotes: true
+          tag: ${{ env.release_tag }}
+          prerelease: false
+          updateOnlyUnreleased: true
+          commit: ${{ env.release_branch }}
+        # uses: "actions/github-script@v5"
+        # with:
+        #   script: |
+        #     try {
+        #       await github.rest.repos.createRelease({
+        #         draft: true,
+        #         generate_release_notes: false,
+        #         owner: context.repo.owner,
+        #         prerelease: false,
+        #         repo: context.repo.repo,
+        #         tag_name: process.env.release_tag,
+        #         name: process.env.release_tag,
+        #         target_commitish: process.env.release_branch,
+        #         generate_release_notes: true,
+        #       });
+        #     } catch (error) {
+        #       core.setFailed(error.message);
+        #     }
       - name: Publish
         run: |
           # TODO use github actions to do the release
