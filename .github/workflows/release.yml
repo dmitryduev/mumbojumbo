@@ -114,7 +114,7 @@ jobs:
                 prerelease: false,
                 repo: context.repo.repo,
                 tag_name: process.env.release_tag,
-                name: process.env.new_version,
+                name: process.env.release_tag,
                 target_commitish: process.env.release_branch,
                 generate_release_notes: true,
               });
