@@ -89,7 +89,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install bump2version
           new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
-          echo "release_version=${new_version}" >> $GITHUB_ENV
+          echo "release_branch=release-${new_version}" >> $GITHUB_ENV
+          echo "release_tag=v${new_version}" >> $GITHUB_ENV
           
       - name: Create release pr
         id: create-pr
@@ -97,7 +98,7 @@ jobs:
         with:
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          branch: releas-${{ env.release_version }}
+          branch: ${{ env.release_branch }}
           title: "chore(sdk): release ${{ env.release_version }} version"
           draft: true
           
@@ -108,15 +109,13 @@ jobs:
             try {
               await github.rest.repos.createRelease({
                 draft: true,
-                generate_release_notes: false,
                 owner: context.repo.owner,
                 prerelease: false,
                 repo: context.repo.repo,
-                tag_name: 'v'+process.env.new_version,
-                name: 'v'+process.env.new_version,
-                target_commitish: process.steps.create-pr.outputs.pull-request-head-sha,
+                tag_name: process.env.release_tag,
+                name: process.env.new_version,
+                target_commitish: process.env.release_branch,
                 generate_release_notes: true,
-                previous_tag_name: process.env.previous_release_tag,
               });
             } catch (error) {
               core.setFailed(error.message);
