@@ -13,10 +13,9 @@ on:
           - "major"
           - "minor"
           - "patch"
-          - "dev"
           - "devkind"
-          - "pre"
           - "prekind"
+          - "pre"
 
 jobs:
   freeze:
@@ -74,36 +73,34 @@ jobs:
       - test-regression
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main for ${{ github.event.inputs.bump-version-kind }} release
+      - name: Checkout main for current release
         uses: actions/checkout@v3
         with:
           ref: main
-
       - name: Setup python
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-
       - name: Bump version
         run: |
           python -m pip install --upgrade pip
           pip install bump2version
+          
           new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
+
+          echo "release_version=${new_version}" >> $GITHUB_ENV
           echo "release_branch=release-${new_version}" >> $GITHUB_ENV
           echo "release_tag=v${new_version}" >> $GITHUB_ENV
-          echo "release_version=${new_version}" >> $GITHUB_ENV
-          
-      - name: Create release pr
+      - name: Create release PR
         id: create-pr
         uses: peter-evans/create-pull-request@v4
         with:
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           branch: ${{ env.release_branch }}
-          base: ${{ env.release_branch }}
+          delete-branch: true
           title: "chore(sdk): release ${{ env.release_version }} version"
           draft: true
-          
       - name: Create release notes
         uses: "actions/github-script@v5"
         with:
@@ -111,6 +108,7 @@ jobs:
             try {
               await github.rest.repos.createRelease({
                 draft: true,
+                generate_release_notes: false,
                 owner: context.repo.owner,
                 prerelease: false,
                 repo: context.repo.repo,
@@ -122,11 +120,10 @@ jobs:
             } catch (error) {
               core.setFailed(error.message);
             }
-
       - name: Publish
         run: |
           # TODO use github actions to do the release
-          echo ${{ steps.create-pr.outputs.pull-request-head-sha }}
+          echo ${{ steps.create-pr.outputs.pull-request-operation }}
           echo ${{ steps.create-pr.outputs.pull-request-head-sha }}
 
   unfreeze:
