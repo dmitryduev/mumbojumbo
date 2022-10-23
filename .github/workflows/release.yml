@@ -72,6 +72,9 @@ jobs:
       - test-nightly
       - test-regression
     runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.bump-version.outputs.release_version }}
+      output2: ${{ steps.create-pr.outputs.pull-request-head-sha }}
     steps:
       - name: Checkout main for current release
         uses: actions/checkout@v3
@@ -82,13 +85,14 @@ jobs:
         with:
           python-version: '3.8'
       - name: Bump version
+        id: bump-version
         run: |
           python -m pip install --upgrade pip
           pip install bump2version
           
           new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
 
-          echo "release_version=${new_version}" >> $GITHUB_ENV
+          echo "release_version=${new_version}" >> $GITHUB_OUTPUT
           echo "release_branch=release-${new_version}" >> $GITHUB_ENV
           echo "release_tag=v${new_version}" >> $GITHUB_ENV
       - name: Create release PR
@@ -99,7 +103,7 @@ jobs:
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           branch: ${{ env.release_branch }}
           delete-branch: true
-          title: "chore(sdk): release ${{ env.release_version }} version"
+          title: "chore(sdk): release ${{ steps.bump-version.outputs.release_version }} version"
           draft: true
           commit-message: "[create-pull-request] automated change of workflow ${{ github.run_id }} attempt ${{ github.run_number }}"
       - name: Create release notes
@@ -113,15 +117,24 @@ jobs:
           prerelease: false
           updateOnlyUnreleased: true
           commit: ${{ env.release_branch }}
+    
+  build-and-publish:
+      name: Build and Publish
+      runs-on: ubuntu-latest
+      needs: make-release
+      steps:
+      - name: Build
+        run: |
+          echo ${{ needs.make-release.outputs.output1 }}
       - name: Publish
         run: |
           # TODO use github actions to do the release
-          echo ${{ steps.create-pr.outputs.pull-request-operation }}
-          echo ${{ steps.create-pr.outputs.pull-request-head-sha }}
+          # echo ${{ steps.create-pr.outputs.pull-request-operation }}
+          echo ${{ needs.make-release.outputs.output2 }}
 
   unfreeze:
     name: Unfreeze main branch
-    needs: make-release
+    needs: build-and-publish
     runs-on: ubuntu-latest
     steps:
       - name: Unfreeze main branch
