@@ -113,24 +113,6 @@ jobs:
           prerelease: false
           updateOnlyUnreleased: true
           commit: ${{ env.release_branch }}
-        # uses: "actions/github-script@v5"
-        # with:
-        #   script: |
-        #     try {
-        #       await github.rest.repos.createRelease({
-        #         draft: true,
-        #         generate_release_notes: false,
-        #         owner: context.repo.owner,
-        #         prerelease: false,
-        #         repo: context.repo.repo,
-        #         tag_name: process.env.release_tag,
-        #         name: process.env.release_tag,
-        #         target_commitish: process.env.release_branch,
-        #         generate_release_notes: true,
-        #       });
-        #     } catch (error) {
-        #       core.setFailed(error.message);
-        #     }
       - name: Publish
         run: |
           # TODO use github actions to do the release
