@@ -148,8 +148,12 @@ jobs:
       - name: Test install
         run: |
           pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
-          wandb --version
-          wandb --help
+          version=`python -c "import mumbojumbo as mj; print(mj.__version__)"`
+          if [ $version != ${{ needs.make-release.outputs.release-version }} ]; then
+            echo "Version mismatch: $version != ${{ needs.make-release.outputs.release-version }}"
+            exit 1
+          fi
+          
 
   unfreeze:
     name: Unfreeze main branch
