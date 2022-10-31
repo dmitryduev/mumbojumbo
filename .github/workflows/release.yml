@@ -137,13 +137,19 @@ jobs:
       - name: Build
         run: |
           # echo ${{ needs.make-release.outputs.output1 }}
+          pip install wheel
+          rm -rf dist build
           python setup.py sdist bdist_wheel
           ls -l dist
       - name: Publish
         run: |
-          # TODO use github actions to do the release
-          # echo ${{ steps.create-pr.outputs.pull-request-operation }}
-          echo ${{ needs.make-release.outputs.release-version }}
+          pip install twine
+          twine upload --username=__token__ --password=${{ secrets.TEST_PYPI_TOKEN }} --repository testpypi dist/*
+      - name: Test install
+        run: |
+          pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
+          wandb --version
+          wandb --help
 
   unfreeze:
     name: Unfreeze main branch
