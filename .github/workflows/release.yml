@@ -68,7 +68,7 @@ jobs:
           exit 1
           
   make-release:
-    name: Release
+    name: Prepare Release
     environment: "release"
     if: always()
     needs:
