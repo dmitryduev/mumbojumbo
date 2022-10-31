@@ -124,6 +124,7 @@ jobs:
   build-and-publish:
       name: Build and Publish
       runs-on: ubuntu-latest
+      if: always()
       needs: make-release
       steps:
       - name: Checkout ${{  needs.make-release.outputs.release-head-sha }} for current release
@@ -158,6 +159,7 @@ jobs:
   unfreeze:
     name: Unfreeze main branch
     needs: build-and-publish
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Unfreeze main branch
