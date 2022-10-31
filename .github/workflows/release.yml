@@ -64,10 +64,13 @@ jobs:
           cd wandb-testing
           pip install git+https://github.com/wandb/wandb@main#egg=wandb
           python --version
+          lscpu
+          exit 1
           
   make-release:
     name: Release
     environment: "release"
+    if: always()
     needs:
       - test-nightly
       - test-regression
