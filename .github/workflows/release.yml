@@ -78,7 +78,6 @@ jobs:
     outputs:
       release-version: ${{ steps.bump-version.outputs.release_version }}
       release-head-sha: ${{ steps.create-pr.outputs.pull-request-head-sha }}
-      release-branch: ${{ steps.create-pr.outputs.pull-request-branch }}
     steps:
       - name: Checkout main for current release
         uses: actions/checkout@v3
@@ -171,7 +170,6 @@ jobs:
           # todo: set up git
           # todo: merge to main and latest
           echo lol
-
 
   unfreeze:
     name: Unfreeze main branch
