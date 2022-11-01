@@ -78,6 +78,7 @@ jobs:
     outputs:
       release-version: ${{ steps.bump-version.outputs.release_version }}
       release-head-sha: ${{ steps.create-pr.outputs.pull-request-head-sha }}
+      release-branch: ${{ steps.create-pr.outputs.pull-request-branch }}
     steps:
       - name: Checkout main for current release
         uses: actions/checkout@v3
@@ -107,7 +108,6 @@ jobs:
           branch: ${{ env.release_branch }}
           delete-branch: true
           title: "chore(sdk): release ${{ steps.bump-version.outputs.release_version }} version"
-          draft: true
           commit-message: "[create-pull-request] automated change of workflow ${{ github.run_id }} attempt ${{ github.run_number }}"
       - name: Create release notes
         uses: ncipollo/release-action@v1
@@ -154,7 +154,24 @@ jobs:
             echo "Version mismatch: $version != ${{ needs.make-release.outputs.release-version }}"
             exit 1
           fi
-          
+
+  post-release:
+    name: Post Release Actions
+    runs-on: ubuntu-latest
+    needs: build-and-publish
+    if: always()
+    steps:
+      - name: Bump version
+        run: |
+          # todo: checkout release branch 
+          # todo: make bump-to-dev
+          echo rofl
+      - name: Merge Release PR to main & latest branches
+        run: |
+          # todo: set up git
+          # todo: merge to main and latest
+          echo lol
+
 
   unfreeze:
     name: Unfreeze main branch
