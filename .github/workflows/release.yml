@@ -119,9 +119,37 @@ jobs:
           prerelease: false
           updateOnlyUnreleased: true
           commit: ${{ env.release_branch }}
+      - name: Add release notes to CHANGELOG.md
+        run: |
+          # install jq
+          sudo apt-get update
+          sudo apt-get install jq
+          
+          # assign result of a curl call to a variable
+          version="${{ steps.bump-version.outputs.release_version }}"
+          
+          release_notes_md=$(curl -s \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/dmitryduev/mumbojumbo/releases/tags/v${version} | jq -r '.body')
+          
+          # remove first three lines of the variable
+          #release_notes_md=$(echo "$release_notes_md" | tail -n +4)
+          
+          # fix header and footer
+          release_notes_md="## ${version} ($(date '+%B %-d, %Y'))\n\n${release_notes_md}\n"
+          
+          # prepend the result to CHANGELOG.md
+          touch CHANGELOG.md
+          echo "$release_notes_md" | cat - CHANGELOG.md > temp && mv temp CHANGELOG.md
+
+          git add CHANGELOG.md
+          git commit -m "chore(sdk): update CHANGELOG.md for ${{ env.release_tag }}"
+          git push origin ${{ env.release_branch }}
     
   build-and-publish:
       name: Build and Publish
+      environment: "release"
       runs-on: ubuntu-latest
       if: always()
       needs: make-release
