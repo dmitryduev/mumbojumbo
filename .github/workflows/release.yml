@@ -121,10 +121,6 @@ jobs:
           commit: ${{ env.release_branch }}
       - name: Add release notes to CHANGELOG.md
         run: |
-          # install jq
-          sudo apt-get update
-          sudo apt-get install jq
-          
           # assign result of a curl call to a variable
           version="${{ steps.bump-version.outputs.release_version }}"
           
@@ -142,7 +138,11 @@ jobs:
           # prepend the result to CHANGELOG.md
           touch CHANGELOG.md
           echo "$release_notes_md" | cat - CHANGELOG.md > temp && mv temp CHANGELOG.md
-
+          
+          # configure git
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          
           git add CHANGELOG.md
           git commit -m "chore(sdk): update CHANGELOG.md for ${{ env.release_tag }}"
           git push origin ${{ env.release_branch }}
