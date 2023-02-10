@@ -1,3 +1,13 @@
+## v0.13.10 (2023-02-10)
+
+### :hammer: Fixes
+
+- **sdk**: update LICENSE
+
+### :nail_care: Cleanup
+
+- **build**: add pyproject.toml
+
 ## v0.13.9 (2023-02-10)
 
 ### Perf
