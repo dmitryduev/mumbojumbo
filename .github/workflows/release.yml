@@ -13,11 +13,11 @@ on:
           - "MAJOR"
           - "MINOR"
           - "PATCH"
-      ref:
-        type: string
-        required: false
-        description: The git ref to use for the release
-        default: main
+#      ref:
+#        type: string
+#        required: false
+#        description: The git ref to use for the release
+#        default: main
 
 jobs:
 #  freeze:
@@ -61,8 +61,8 @@ jobs:
     steps:
       - name: Checkout main for current release
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.ref }}
+#        with:
+#          ref: ${{ github.event.inputs.ref }}
       - name: Setup python
         uses: actions/setup-python@v2
         with:
