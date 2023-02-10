@@ -30,7 +30,7 @@ jobs:
 
   test-nightly:
     name: Run nightly tests
-    needs: freeze
+#    needs: freeze
     runs-on: ubuntu-latest
     steps:
       - name: Checkout wandb/wandb
