@@ -75,6 +75,7 @@ jobs:
       - name: Bump version and generate changelog entry with Commitizen (cz)
         id: cz
         run: |
+          git fetch --tags
           new_version="$(cz bump --increment ${{ github.event.inputs.bump-kind }} --yes --dry-run | grep bump | awk '{print $NF}')"
           echo "release_version=${new_version}" >> $GITHUB_OUTPUT
           echo "release_branch=release-${new_version}" >> $GITHUB_ENV
