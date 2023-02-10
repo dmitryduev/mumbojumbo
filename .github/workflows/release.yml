@@ -117,7 +117,7 @@ jobs:
           generateReleaseNotes: true
           tag: ${{ env.release_tag }}
           prerelease: false
-          updateOnlyUnreleased: true
+          updateOnlyUnreleased: false
           commit: ${{ env.release_branch }}
       - name: Add release notes to CHANGELOG.md
         run: |
