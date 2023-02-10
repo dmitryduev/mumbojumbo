@@ -4,27 +4,29 @@ run-name: cut sdk release triggered by ${{ github.actor }}
 on:
   workflow_dispatch:
     inputs:
-      bump-version-kind:
+      bump-kind:
         type: choice
         required: true
         description: How to bump the current version
-        default: devkind
+        default: patch
         options:
-          - "major"
-          - "minor"
-          - "patch"
-          - "devkind"
-          - "prekind"
-          - "pre"
+          - "MAJOR"
+          - "MINOR"
+          - "PATCH"
+      ref:
+        type: string
+        required: false
+        description: The git ref to use for the release
+        default: main
 
 jobs:
-  freeze:
-    name: Freeze main branch
-    runs-on: ubuntu-latest
-    steps:
-      - name: Freeze main branch
-        run: |
-          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
+#  freeze:
+#    name: Freeze main branch
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Freeze main branch
+#        run: |
+#          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
 
   test-nightly:
     name: Run nightly tests
@@ -45,27 +47,6 @@ jobs:
           pip install -e .
           CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py --dryrun trigger-nightly
           # CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait
-
-  test-regression:
-    name: Run regression tests
-    needs: freeze
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout wandb/wandb-testing
-        uses: actions/checkout@v3
-        with:
-          repository: wandb/wandb-testing
-          path: wandb-testing
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Run regression tests
-        run: |
-          cd wandb-testing
-          pip install git+https://github.com/wandb/wandb@main#egg=wandb
-          python --version
-          lscpu
-          exit 1
           
   make-release:
     name: Prepare Release
@@ -73,7 +54,6 @@ jobs:
     if: always()
     needs:
       - test-nightly
-      - test-regression
     runs-on: ubuntu-latest
     outputs:
       release-version: ${{ steps.bump-version.outputs.release_version }}
@@ -82,22 +62,26 @@ jobs:
       - name: Checkout main for current release
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ${{ github.event.inputs.ref }}
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
-      - name: Bump version
-        id: bump-version
+          python-version: '3.9'
+      - name: Install python dependencies
+        id: install-python-deps
         run: |
           python -m pip install --upgrade pip
-          pip install bump2version
-          
-          new_version="$(bump2version ${{ github.event.inputs.bump-version-kind }} --list | grep new_version | cut -d'=' -f2)"
-
+          pip install bump2version commitizen -U
+      - name: Bump version and generate changelog entry with Commitizen (cz)
+        id: cz
+        run: |
+          new_version="$(cz bump --increment ${{ github.event.inputs.bump-kind }} --yes --dry-run | grep bump | awk '{print $NF}')"
           echo "release_version=${new_version}" >> $GITHUB_OUTPUT
           echo "release_branch=release-${new_version}" >> $GITHUB_ENV
           echo "release_tag=v${new_version}" >> $GITHUB_ENV
+          cz bump --increment ${{ github.event.inputs.bump-kind }} -ch --yes
+#          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+#          git config --global user.name "github-actions[bot]"
       - name: Create release PR
         id: create-pr
         uses: peter-evans/create-pull-request@v4
@@ -119,33 +103,6 @@ jobs:
           prerelease: false
           updateOnlyUnreleased: false
           commit: ${{ env.release_branch }}
-      - name: Add release notes to CHANGELOG.md
-        run: |
-          # assign result of a curl call to a variable
-          version="${{ steps.bump-version.outputs.release_version }}"
-          
-          release_notes_md=$(curl -s \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/dmitryduev/mumbojumbo/releases/tags/v${version} | jq -r '.body')
-          
-          # remove first three lines of the variable
-          #release_notes_md=$(echo "$release_notes_md" | tail -n +4)
-          
-          # fix header and footer
-          release_notes_md="## ${version} ($(date '+%B %-d, %Y'))\n\n${release_notes_md}\n"
-          
-          # prepend the result to CHANGELOG.md
-          touch CHANGELOG.md
-          echo "$release_notes_md" | cat - CHANGELOG.md > temp && mv temp CHANGELOG.md
-          
-          # configure git
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          
-          git add CHANGELOG.md
-          git commit -m "chore(sdk): update CHANGELOG.md for ${{ env.release_tag }}"
-          git push origin ${{ env.release_branch }}
     
   build-and-publish:
       name: Build and Publish
@@ -161,7 +118,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: '3.9'
       - name: Build
         run: |
           # echo ${{ needs.make-release.outputs.output1 }}
@@ -199,12 +156,12 @@ jobs:
           # todo: merge to main and latest
           echo lol
 
-  unfreeze:
-    name: Unfreeze main branch
-    needs: build-and-publish
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Unfreeze main branch
-        run: |
-          curl -d "frozen=false&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
+#  unfreeze:
+#    name: Unfreeze main branch
+#    needs: build-and-publish
+#    if: always()
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Unfreeze main branch
+#        run: |
+#          curl -d "frozen=false&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
