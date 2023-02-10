@@ -1,3 +1,9 @@
+## v0.13.11 (2023-02-10)
+
+### :sparkles: Enhancements
+
+- **cz**: add post bump hook
+
 ## v0.13.10 (2023-02-10)
 
 ### :hammer: Fixes
