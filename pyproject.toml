@@ -1,7 +1,7 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
 major_version_zero = true
-version = "0.13.11"
+version = "0.13.12"
 version_files = ["setup.py", "setup.cfg", "mumbojumbo/__init__.py"]
 tag_format = "v$major.$minor.$patch$prerelease"
 post_bump_hooks = [
