@@ -8,7 +8,7 @@ on:
         type: choice
         required: true
         description: How to bump the current version
-        default: patch
+        default: "PATCH"
         options:
           - "MAJOR"
           - "MINOR"
