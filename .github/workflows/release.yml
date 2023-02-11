@@ -38,7 +38,7 @@ jobs:
         with:
           repository: wandb/wandb
           path: wandb
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.9
       - name: Run nightly tests
@@ -72,17 +72,20 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install bump2version commitizen -U
+      - name: Setup git
+        id: setup-git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git fetch --tags
       - name: Bump version and generate changelog entry with Commitizen (cz)
         id: cz
         run: |
-          git fetch --tags
           new_version="$(cz bump --increment ${{ github.event.inputs.bump-kind }} --yes --dry-run | grep bump | awk '{print $NF}')"
           echo "release_version=${new_version}" >> $GITHUB_OUTPUT
           echo "release_branch=release-${new_version}" >> $GITHUB_ENV
           echo "release_tag=v${new_version}" >> $GITHUB_ENV
           cz bump --increment ${{ github.event.inputs.bump-kind }} -ch --yes
-#          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-#          git config --global user.name "github-actions[bot]"
       - name: Create release PR
         id: create-pr
         uses: peter-evans/create-pull-request@v4
