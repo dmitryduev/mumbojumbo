@@ -33,7 +33,8 @@ jobs:
           pip install -e .
           CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py --dryrun trigger-nightly
           # CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait
-          
+          exit 1
+
   call-bump-version-workflow:
     name: Call bump-version workflow
     if: always()
@@ -53,9 +54,9 @@ jobs:
         with:
           allowUpdates: true
           draft: false
-          name: v${{ needs.call-bump-version-workflow.outputs.version }}
+          name: ${{ needs.call-bump-version-workflow.outputs.tag }}
           generateReleaseNotes: true
-          tag: v${{ needs.call-bump-version-workflow.outputs.version }}
+          tag: ${{ needs.call-bump-version-workflow.outputs.tag }}
           prerelease: false
           updateOnlyUnreleased: false
           commit: ${{ needs.call-bump-version-workflow.outputs.branch }}

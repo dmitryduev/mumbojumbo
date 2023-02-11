@@ -11,11 +11,11 @@ on:
         default: "PATCH"
     outputs:
       version:
-        description: "bumped version"
         value: ${{ jobs.bump-version.outputs.version }}
       branch:
-          description: "bumped version"
-          value: ${{ jobs.bump-version.outputs.branch }}
+        value: ${{ jobs.bump-version.outputs.branch }}
+      tag:
+        value: ${{ jobs.bump-version.outputs.tag }}
   workflow_dispatch:
     bump-kind:
       type: choice
@@ -33,6 +33,7 @@ jobs:
     outputs:
       version: ${{ steps.cz.outputs.version }}
       branch: ${{ steps.cz.outputs.branch }}
+      tag: ${{ steps.cz.outputs.tag }}
     steps:
       - name: Checkout out
         uses: actions/checkout@v3
@@ -59,6 +60,7 @@ jobs:
             cz bump --increment ${{ github.event.inputs.bump-kind }} -ch --yes
             echo "version=v${new_version}" >> $GITHUB_OUTPUT
             echo "branch=release-${new_version}" >> $GITHUB_OUTPUT
+            echo "tag=v${new_version}" >> $GITHUB_OUTPUT
 
       - name: Create release PR
         id: create-pr
