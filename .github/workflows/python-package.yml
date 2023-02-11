@@ -34,12 +34,3 @@ jobs:
         user: __token__
         password: ${{ secrets.TEST_PYPI_TOKEN }}
         repository_url: https://test.pypi.org/legacy/
-    
-    # - name: Test install
-    #     run: |
-    #       pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
-    #       version=`python -c "import mumbojumbo as mj; print(mj.__version__)"`
-    #       if [ $version != ${{ needs.prepare-release.outputs.release-version }} ]; then
-    #         echo "Version mismatch: $version != ${{ needs.prepare-release.outputs.release-version }}"
-    #         exit 1
-    #       fi

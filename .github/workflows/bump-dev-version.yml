@@ -1,29 +1,36 @@
- #   steps:
-  #     - name: Checkout ${{ needs.prepare-release.outputs.release-branch }} for current release
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ needs.prepare-release.outputs.release-branch }}
-  #     - name: Setup python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3.9'
-  #     - name: Install python dependencies
-  #       id: install-python-deps
-  #       run: |
-  #         echo ${{ needs.prepare-release.outputs.release-branch }}
-  #         python -m pip install --upgrade pip
-  #         pip install bump2version -U
-  #     - name: Setup git
-  #       id: setup-git
-  #       run: |
-  #         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-  #         git config --global user.name "github-actions[bot]"
-  #         git fetch --tags
-  #     - name: Bump version
-  #       run: |
-  #         bump2version patch --no-tag
-  #         bump2version devkind --no-tag
-  #         git push origin ${{ needs.prepare-release.outputs.release-branch }}
-  #     - name: Nudge to merge the Release PR to main and unfreeze the release branch
-  #       run: |
-  #         echo "Please check and merge the release PR to main and unfreeze the main branch"
+name: Bump version and generate changelog
+on: 
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+
+jobs:
+  bump-dev-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ inputs.branch }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch  }}
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Setup git
+        id: setup-git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+      - name: Install python dependencies
+        id: install-python-deps
+        run: |
+          echo ${{ inputs.branch }}
+          python -m pip install --upgrade pip
+          pip install bump2version -U
+      - name: Bump version
+        run: |
+          bump2version patch --no-tag
+          bump2version devkind --no-tag
+          git push origin ${{ inputs.branch  }}
