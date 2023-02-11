@@ -1,0 +1,45 @@
+name: Package wandb Python
+
+on: 
+    workflow_call:
+      inputs:
+        branch:
+          required: true
+          type: string
+    workflow_dispatch: 
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout out
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.branch || github.ref }}
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with:
+         python-version: '3.9'
+
+    - name: Build
+      run: |
+        pip install wheel
+        rm -rf dist build
+        python setup.py sdist bdist_wheel
+        ls -l dist
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      with:
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+    
+    # - name: Test install
+    #     run: |
+    #       pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
+    #       version=`python -c "import mumbojumbo as mj; print(mj.__version__)"`
+    #       if [ $version != ${{ needs.prepare-release.outputs.release-version }} ]; then
+    #         echo "Version mismatch: $version != ${{ needs.prepare-release.outputs.release-version }}"
+    #         exit 1
+    #       fi
