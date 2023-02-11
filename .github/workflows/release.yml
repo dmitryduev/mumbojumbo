@@ -56,7 +56,7 @@ jobs:
 #        with:
 #          ref: ${{ github.event.inputs.ref }}
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
       - name: Install python dependencies
@@ -137,13 +137,15 @@ jobs:
   post-release:
     name: Post Release Actions
     runs-on: ubuntu-latest
-    needs: build-and-publish
+    needs:
+      - build-and-publish
+      - make-release
     if: always()
     steps:
       - name: Checkout ${{ needs.make-release.outputs.release_branch }} for current release
         uses: actions/checkout@v3
         with:
-          ref: ${{  needs.make-release.outputs.release_branch }}
+          ref: ${{ needs.make-release.outputs.release_branch }}
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -151,6 +153,7 @@ jobs:
       - name: Install python dependencies
         id: install-python-deps
         run: |
+          echo ${{ needs.make-release.outputs.release_branch }}
           python -m pip install --upgrade pip
           pip install bump2version -U
       - name: Setup git
@@ -161,8 +164,8 @@ jobs:
           git fetch --tags
       - name: Bump version
         run: |
-          bump2version patch --no-tag --allow-dirty
-          bump2version devkind --no-tag --allow-dirty
+          bump2version patch --no-tag
+          bump2version devkind --no-tag
           git push origin ${{ needs.make-release.outputs.release_branch }}
       - name: Nudge to merge the Release PR to main and unfreeze the release branch
         run: |
