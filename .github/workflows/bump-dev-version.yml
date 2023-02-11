@@ -1,10 +1,11 @@
-name: Bump version and generate changelog
+name: Bump dev version
 on: 
   workflow_call:
     inputs:
       branch:
         required: true
         type: string
+  workflow_dispatch:
 
 jobs:
   bump-dev-version:
