@@ -39,7 +39,6 @@ jobs:
   verify-deploy:
     runs-on: ubuntu-latest
     environment: "release"
-    if: always()
     needs: 
       - test-nightly
     steps:
