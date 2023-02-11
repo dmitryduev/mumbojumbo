@@ -1,3 +1,9 @@
+## v0.13.25 (2023-02-11)
+
+### :nail_care: Cleanup
+
+- **sss**: try this simple example
+
 ## v0.13.24 (2023-02-11)
 
 ### :sparkles: Enhancements
