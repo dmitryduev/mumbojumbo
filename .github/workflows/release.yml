@@ -40,6 +40,10 @@ jobs:
     environment: "release"
     needs: 
       - test-nightly
+    steps:
+      - name: check
+        run: |
+          echo "TEST"
 
   call-bump-version-workflow:
     name: Call bump-version workflow
