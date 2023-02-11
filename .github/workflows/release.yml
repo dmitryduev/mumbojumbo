@@ -43,6 +43,7 @@ jobs:
     uses: ./.github/workflows/bump-version.yml
     with:
       branch: ${{ github.ref }}
+      bump-kind: ${{ github.event.inputs.bump-kind }}
     # runs-on: ubuntu-latest
     # outputs:
     #   # release-version: ${{ steps.cz.outputs.version }}
