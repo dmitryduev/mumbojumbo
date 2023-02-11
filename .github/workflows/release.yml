@@ -36,14 +36,14 @@ jobs:
           
   prepare-release:
     name: Prepare Release
-    environment: "release"
-    if: always()
+    # environment: "release"
+    # if: always()
     needs:
       - test-nightly
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/bump-version.yml
     with:
       branch: ${{ github.ref }}
+    # runs-on: ubuntu-latest
     # outputs:
     #   # release-version: ${{ steps.cz.outputs.version }}
     #   release-branch: ${{ steps.cz.outputs.branch }}
