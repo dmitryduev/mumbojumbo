@@ -107,10 +107,10 @@ jobs:
       if: always()
       needs: make-release
       steps:
-      - name: Checkout ${{ needs.make-release.outputs.release-head-sha }} for current release
+      - name: Checkout ${{ jobs.make-release.outputs.release-head-sha }} for current release
         uses: actions/checkout@v3
         with:
-          ref: ${{  needs.make-release.outputs.release-head-sha }}
+          ref: ${{ jobs.make-release.outputs.release-head-sha }}
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -129,23 +129,21 @@ jobs:
         run: |
           pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
           version=`python -c "import mumbojumbo as mj; print(mj.__version__)"`
-          if [ $version != ${{ needs.make-release.outputs.release-version }} ]; then
-            echo "Version mismatch: $version != ${{ needs.make-release.outputs.release-version }}"
+          if [ $version != ${{ jobs.make-release.outputs.release-version }} ]; then
+            echo "Version mismatch: $version != ${{ jobs.make-release.outputs.release-version }}"
             exit 1
           fi
 
   post-release:
     name: Post Release Actions
     runs-on: ubuntu-latest
-    needs:
-      - build-and-publish
-      - make-release
+    needs: build-and-publish
     if: always()
     steps:
-      - name: Checkout ${{ needs.make-release.outputs.release_branch }} for current release
+      - name: Checkout ${{ jobs.make-release.outputs.release_branch }} for current release
         uses: actions/checkout@v3
         with:
-          ref: ${{ needs.make-release.outputs.release_branch }}
+          ref: ${{ jobs.make-release.outputs.release_branch }}
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -153,7 +151,7 @@ jobs:
       - name: Install python dependencies
         id: install-python-deps
         run: |
-          echo ${{ needs.make-release.outputs.release_branch }}
+          echo ${{ jobs.make-release.outputs.release_branch }}
           python -m pip install --upgrade pip
           pip install bump2version -U
       - name: Setup git
@@ -166,7 +164,7 @@ jobs:
         run: |
           bump2version patch --no-tag
           bump2version devkind --no-tag
-          git push origin ${{ needs.make-release.outputs.release_branch }}
+          git push origin ${{ jobs.make-release.outputs.release_branch }}
       - name: Nudge to merge the Release PR to main and unfreeze the release branch
         run: |
           echo "Please check and merge the release PR to main and unfreeze the main branch"
