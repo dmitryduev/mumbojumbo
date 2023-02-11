@@ -1,3 +1,3 @@
 from .sdk.mumbo import Mumbo
 
-__version__ = "0.13.23.dev1"
+__version__ = "0.13.23"
