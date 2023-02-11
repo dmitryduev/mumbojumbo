@@ -4,9 +4,9 @@ major_version_zero = true
 version = "0.13.19.dev1"
 version_files = ["setup.py", "setup.cfg", "mumbojumbo/__init__.py"]
 tag_format = "v$major.$minor.$patch$prerelease"
-post_bump_hooks = [
-  "tools/cz_version_to_dev.sh",
-]
+#post_bump_hooks = [
+#  "tools/cz_version_to_dev.sh",
+#]
 
 [tool.commitizen.change_type_map]
 "feat" = ":sparkles: Enhancements"
