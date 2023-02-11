@@ -34,10 +34,12 @@ jobs:
           CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py --dryrun trigger-nightly
           # CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait
           exit 1
+        continue-on-error: true
 
   verify-deploy:
     runs-on: ubuntu-latest
     environment: "release"
+    if: always()
     needs: 
       - test-nightly
     steps:
@@ -47,7 +49,6 @@ jobs:
 
   call-bump-version-workflow:
     name: Call bump-version workflow
-    if: always()
     needs:
       - verify-deploy
     uses: ./.github/workflows/bump-version.yml
@@ -57,7 +58,6 @@ jobs:
 
   create-release-notes:
     runs-on: ubuntu-latest
-    # if: always()
     needs:
       - call-bump-version-workflow
     steps:
@@ -83,7 +83,6 @@ jobs:
   call-bump-dev-version-workflow:
     name: Call bump-dev-version workflow
     uses: ./.github/workflows/bump-dev-version.yml
-    # if: always()
     needs:
       - call-bump-version-workflow
       - create-release-notes
