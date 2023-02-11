@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="mumbojumbo",
-    version="0.13.24",
+    version="0.13.25",
     packages=["mumbojumbo"],
     package_dir={"mumbojumbo": "mumbojumbo"},
 )
