@@ -41,49 +41,50 @@ jobs:
     needs:
       - test-nightly
     runs-on: ubuntu-latest
+    uses: ./.github/workflows/bump-version.yml
     # outputs:
     #   # release-version: ${{ steps.cz.outputs.version }}
     #   release-branch: ${{ steps.cz.outputs.branch }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-      - name: Open release PR (bump version and generate changelog)
-        id: cz        
-        uses: ./.github/workflows/bump-version.yml
-        with:
-          branch: ${{ github.ref }}
-      - name: Create Release Notes
-        uses: ncipollo/release-action@v1
-        with:
-          allowUpdates: true
-          draft: false
-          name: v${{ steps.cz.outputs.version }}
-          generateReleaseNotes: true
-          tag: v${{ steps.cz.outputs.version }}
-          prerelease: false
-          updateOnlyUnreleased: false
-          commit: ${{ steps.cz.outputs.branch }}
-      - name: Build and Publish
-        uses: ./.github/workflows/python-package.yml
-        with:
-          branch: ${{steps.cz.outputs.branch}}
-      - name: Test Publish
-        run: |
-          pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
-          version=`python -c "import mumbojumbo as mj; print(mj.__version__)"`
-          if [ $version != ${{ steps.cz.outputs.version }} ]; then
-            echo "Version mismatch: $version != ${{ steps.cz.outputs.version }}"
-            exit 1
-          fi
-      - name: Bump dev version
-        uses: ./.github/workflows/bump-dev-version.yml
-        with:
-          branch: ${{steps.cz.outputs.branch}}
-      - name: Nudge to merge the Release PR to main and unfreeze the release branch
-        run: |
-          echo "Please check and merge the release PR to main and unfreeze the main branch"
+    # steps:
+    #   - uses: actions/checkout@v3
+    #   # - uses: actions/setup-python@v4
+    #   #   with:
+    #   #     python-version: '3.9'
+    #   - name: Open release PR (bump version and generate changelog)
+    #     id: cz        
+    #     uses: ./.github/workflows/bump-version.yml
+    #     with:
+    #       branch: ${{ github.ref }}
+      # - name: Create Release Notes
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     allowUpdates: true
+      #     draft: false
+      #     name: v${{ steps.cz.outputs.version }}
+      #     generateReleaseNotes: true
+      #     tag: v${{ steps.cz.outputs.version }}
+      #     prerelease: false
+      #     updateOnlyUnreleased: false
+      #     commit: ${{ steps.cz.outputs.branch }}
+      # - name: Build and Publish
+      #   uses: ./.github/workflows/python-package.yml
+      #   with:
+      #     branch: ${{steps.cz.outputs.branch}}
+      # - name: Test Publish
+      #   run: |
+      #     pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
+      #     version=`python -c "import mumbojumbo as mj; print(mj.__version__)"`
+      #     if [ $version != ${{ steps.cz.outputs.version }} ]; then
+      #       echo "Version mismatch: $version != ${{ steps.cz.outputs.version }}"
+      #       exit 1
+      #     fi
+      # - name: Bump dev version
+      #   uses: ./.github/workflows/bump-dev-version.yml
+      #   with:
+      #     branch: ${{steps.cz.outputs.branch}}
+      # - name: Nudge to merge the Release PR to main and unfreeze the release branch
+      #   run: |
+      #     echo "Please check and merge the release PR to main and unfreeze the main branch"
  
  
  # build-and-publish:
