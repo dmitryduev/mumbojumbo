@@ -19,14 +19,18 @@ jobs:
     name: Run nightly tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout wandb/wandb
+        uses: actions/checkout@v3
+        with:
+          repository: wandb/wandb
+          path: wandb
       - uses: actions/setup-python@v4
         with:
           python-version: 3.9
       - name: Run nightly tests
         run: |
           cd wandb
-          pip install .
+          pip install -e .
           CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py --dryrun trigger-nightly
           # CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait
           
