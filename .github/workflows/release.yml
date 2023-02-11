@@ -20,17 +20,9 @@ on:
 #        default: main
 
 jobs:
-#  freeze:
-#    name: Freeze main branch
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Freeze main branch
-#        run: |
-#          curl -d "frozen=true&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
 
   test-nightly:
     name: Run nightly tests
-#    needs: freeze
     runs-on: ubuntu-latest
     steps:
       - name: Checkout wandb/wandb
@@ -165,18 +157,6 @@ jobs:
         run: |
           bump2version patch --no-tag --allow-dirty
           bump2version devkind --no-tag --allow-dirty
-      - name: Merge Release PR to main & latest branches
+      - name: Nudge to merge the Release PR to main and unfreeze the release branch
         run: |
-          # todo: set up git
-          # todo: merge to main and latest
-          echo lol
-
-#  unfreeze:
-#    name: Unfreeze main branch
-#    needs: build-and-publish
-#    if: always()
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Unfreeze main branch
-#        run: |
-#          curl -d "frozen=false&user_name=${{ github.actor }}&note=prep for release" -X POST https://www.mergefreeze.com/api/branches/${{ github.repository }}/main/?access_token=${{ secrets.COLDBEAR_TOKEN }}
+          echo "Please check and merge the release PR to main and unfreeze the main branch"
