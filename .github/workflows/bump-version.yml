@@ -70,5 +70,5 @@ jobs:
           author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           branch: ${{ steps.cz.outputs.branch }}
           delete-branch: true
-          title: "chore(sdk): release ${{ steps.cz.outputs.release_version }} version"
+          title: "chore(sdk): release ${{ steps.cz.outputs.version }} version"
           commit-message: "chore(sdk): automated change of workflow ${{ github.run_id }} attempt ${{ github.run_number }}"
