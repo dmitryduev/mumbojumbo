@@ -58,7 +58,7 @@ jobs:
         run: |
             new_version="$(cz bump --increment ${{ github.event.inputs.bump-kind }} --yes --dry-run | grep bump | awk '{print $NF}')"
             cz bump --increment ${{ github.event.inputs.bump-kind }} -ch --yes
-            echo "version=v${new_version}" >> $GITHUB_OUTPUT
+            echo "version=${new_version}" >> $GITHUB_OUTPUT
             echo "branch=release-${new_version}" >> $GITHUB_OUTPUT
             echo "tag=v${new_version}" >> $GITHUB_OUTPUT
 
