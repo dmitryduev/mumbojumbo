@@ -55,10 +55,20 @@ jobs:
       branch: ${{ github.ref }}
       bump-kind: ${{ github.event.inputs.bump-kind }}
 
+  call-python-package-workflow:
+    name: Call python-package workflow
+    uses: ./.github/workflows/python-package.yml
+    secrets: inherit
+    needs:
+      - call-bump-version-workflow
+    with:
+      branch: ${{ needs.call-bump-version-workflow.outputs.branch }}
+
   create-release-notes:
     runs-on: ubuntu-latest
     needs:
       - call-bump-version-workflow
+      - call-python-package-workflow
     steps:
       - uses: ncipollo/release-action@v1
         with:
@@ -70,14 +80,6 @@ jobs:
           prerelease: false
           updateOnlyUnreleased: false
           commit: ${{ needs.call-bump-version-workflow.outputs.branch }}
-
-  call-python-package-workflow:
-    name: Call python-package workflow
-    uses: ./.github/workflows/python-package.yml
-    needs:
-      - call-bump-version-workflow
-    with:
-      branch: ${{ needs.call-bump-version-workflow.outputs.branch }}
 
   verify-package:
     runs-on: ubuntu-latest
