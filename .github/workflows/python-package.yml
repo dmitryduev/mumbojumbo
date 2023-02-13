@@ -6,10 +6,17 @@ on:
         branch:
           required: true
           type: string
+      outputs:
+        version:
+          value: ${{ jobs.package.outputs.version }}
+
     workflow_dispatch: 
 
 jobs:
   package:
+    outputs:
+      version: ${{ steps.test.outputs.version }}
+
     runs-on: ubuntu-latest
 
     steps:
@@ -28,9 +35,17 @@ jobs:
         rm -rf dist build
         python setup.py sdist bdist_wheel
         ls -l dist
+    
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
         user: __token__
         password: ${{ secrets.TEST_PYPI_TOKEN }}
         repository_url: https://test.pypi.org/legacy/
+
+    - name: Test Publish
+      id: test
+      run: |
+        pip install --index-url https://test.pypi.org/simple/ --no-deps mumbojumbo
+        version=`python -c 'import mumbojumbo as mj; print(mj.__version__)'`
+        echo "version=${version}" >> $GITHUB_OUTPUT
