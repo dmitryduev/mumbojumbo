@@ -18,6 +18,8 @@ jobs:
   test-nightly:
     name: Run nightly tests
     runs-on: ubuntu-latest
+    outputs:
+      circleci_workflow_number: ${{ steps.nightly_tests.outputs.circleci_workflow_number }}
     steps:
       - name: Checkout wandb/wandb
         uses: actions/checkout@v3
@@ -28,13 +30,36 @@ jobs:
         with:
           python-version: 3.9
       - name: Run nightly tests
+        id: nightly_tests
         run: |
           cd wandb
           pip install -e .
           CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py --dryrun trigger-nightly
           # CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait
+          echo "circleci_workflow_number=19249" >> $GITHUB_OUTPUT
           exit 1
         continue-on-error: true
+      - name: Post notification to the sdk-release Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_SDK_RELEASE_CHANNEL_ID }}
+          # For posting a rich message using Block Kit
+          payload: |
+            {
+              "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ needs.test-nightly.outputs.circleci_workflow_number }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ needs.test-nightly.outputs.circleci_workflow_number }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   verify-deploy:
     runs-on: ubuntu-latest
@@ -42,9 +67,9 @@ jobs:
     needs: 
       - test-nightly
     steps:
-      - name: check
-        run: |
-          echo "TEST"
+        - name: Verify nightly tests passed
+          run: |
+            echo "Nightly tests finished. Proceed? [y/n/hz]"
 
   call-bump-version-workflow:
     name: Call bump-version workflow
