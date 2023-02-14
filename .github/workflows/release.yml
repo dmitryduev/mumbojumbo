@@ -34,17 +34,19 @@ jobs:
         run: |
           cd wandb
           pip install -e .
-          CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py --dryrun trigger-nightly
-          # CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait
+          OUTPUT=$(CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py --dryrun trigger-nightly)
+          # OUTPUT=$(CIRCLECI_TOKEN=${{ secrets.MUMBOJUMBO_TOKEN }} python tools/circleci-tool.py trigger-nightly --wait)
+          # UUID=$(echo "$OUTPUT" | grep UUID | awk '{print $2}')
+          # NUMBER=$(echo "$OUTPUT" | grep Number | awk '{print $2}')
+          # echo "circleci_workflow_uuid=$UUID" >> $GITHUB_OUTPUT
+          # echo "circleci_workflow_number=$NUMBER" >> $GITHUB_OUTPUT
           echo "circleci_workflow_number=19249" >> $GITHUB_OUTPUT
-          exit 1
         continue-on-error: true
       - name: Post notification to the sdk-release Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: ${{ secrets.SLACK_SDK_RELEASE_CHANNEL_ID }}
-          # For posting a rich message using Block Kit
           payload: |
             {
               "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.nightly_tests.outputs.circleci_workflow_number }}",
