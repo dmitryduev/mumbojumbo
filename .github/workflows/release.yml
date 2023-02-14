@@ -47,13 +47,13 @@ jobs:
           # For posting a rich message using Block Kit
           payload: |
             {
-              "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ needs.test-nightly.outputs.circleci_workflow_number }}",
+              "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.test-nightly.outputs.circleci_workflow_number }}",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ needs.test-nightly.outputs.circleci_workflow_number }}"
+                    "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.test-nightly.outputs.circleci_workflow_number }}"
                   }
                 }
               ]
