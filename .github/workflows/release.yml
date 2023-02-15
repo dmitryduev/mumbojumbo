@@ -78,7 +78,7 @@ jobs:
     steps:
         - name: Verify nightly tests passed
           run: |
-            echo "Nightly tests finished. Proceed? [y/n/hz]"
+            echo "Nightly tests finished. Proceed?"
 
   call-bump-version-workflow:
     name: Call bump-version workflow

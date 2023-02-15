@@ -10,7 +10,7 @@ on:
         version:
           value: ${{ jobs.package.outputs.version }}
 
-    workflow_dispatch: 
+    workflow_dispatch:
 
 jobs:
   package:
