@@ -49,13 +49,20 @@ jobs:
           channel-id: ${{ secrets.SLACK_SDK_RELEASE_CHANNEL_ID }}
           payload: |
             {
-              "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.nightly_tests.outputs.circleci_workflow_number }}",
+              "text": "Nightly tests finished. Proceed with release?",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Nightly tests finished: https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.nightly_tests.outputs.circleci_workflow_number }}"
+                    "text": "[Nightly tests finished](https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.nightly_tests.outputs.circleci_workflow_number }})"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "@sdk-team: [Proceed with the release](https://github.com/dmitryduev/mumbojumbo/actions/runs/${{github.run_id}})?"
                   }
                 }
               ]
