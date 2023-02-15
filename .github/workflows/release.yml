@@ -55,14 +55,14 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "[Nightly tests finished](https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.nightly_tests.outputs.circleci_workflow_number }})"
+                    "text": "<https://app.circleci.com/pipelines/github/wandb/wandb/${{ steps.nightly_tests.outputs.circleci_workflow_number }}|:test_tube: Nightly tests finished>"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "@sdk-team: [Proceed with the release](https://github.com/dmitryduev/mumbojumbo/actions/runs/${{github.run_id}})?"
+                    "text": ":rocket: @sdk-team: <https://github.com/dmitryduev/mumbojumbo/actions/runs/${{github.run_id}}|Proceed with the release?>"
                   }
                 }
               ]
