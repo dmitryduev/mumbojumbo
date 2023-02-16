@@ -8,6 +8,8 @@ def main():
         entity="dimaduev",
         project="lunch",
     )
+    run.config["a"] = 1
+    assert run.config["a"] == 1
     run.finish()
 
 
